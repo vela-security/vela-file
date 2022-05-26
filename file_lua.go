@@ -36,12 +36,30 @@ func (xf *xFile) backupL(L *lua.LState) int {
 	return 0
 }
 
-func (xf *xFile) Index(L *lua.LState, key string) lua.LValue {
-	if key == "push" {
-		return L.NewFunction(xf.pushL)
+func (xf *xFile) dayL(L *lua.LState) int {
+	format := L.IsString(1)
+	if format == "" {
+		format = "2006-01-02"
 	}
-	if key == "backup" {
-		return L.NewFunction(xf.backupL)
+
+	return 0
+}
+
+func (xf *xFile) startL(L *lua.LState) int {
+	xEnv.Start(L, xf).From(L.CodeVM()).Do()
+	return 0
+}
+
+func (xf *xFile) Index(L *lua.LState, key string) lua.LValue {
+	switch key {
+	case "push":
+		return lua.NewFunction(xf.pushL)
+	case "backup":
+		return lua.NewFunction(xf.backupL)
+	case "day":
+		return lua.NewFunction(xf.dayL)
+	default:
+		return lua.LNil
 	}
 
 	return lua.LNil

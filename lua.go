@@ -24,14 +24,18 @@ var (
 
 func newLuaFileOpen(L *lua.LState) int {
 	cfg := newConfig(L)
+	var ov *xFile
+
 	proc := L.NewProc(cfg.name, fileTypeOf)
 	if proc.IsNil() {
-		proc.Set(newFile(cfg))
-		goto done
+		ov = newFile(cfg)
+		proc.Set(ov)
+	} else {
+		ov = proc.Data.(*xFile)
+		ov.cfg = cfg
 	}
-	proc.Data.(*xFile).cfg = cfg
 
-done:
+	xEnv.Start(L, ov).From(L.CodeVM()).Do()
 	L.Push(proc)
 	return 1
 }
