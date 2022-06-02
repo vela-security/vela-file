@@ -74,20 +74,91 @@
 - 新建一个文件遍历器
 - walk = file.walk(name)
 ###基础接口
-- [walk.open()](walk.open)
+- [walk.deep(int)](walk) 
+- [walk.dir(bool)](walk)
+- [walk.pipe(object)](walk)
+- [walk.filter(string...)](walk)
+- [walk.ignore(string...)](walk)
+- [walk.run()](walk)
 
-### walk.open
-- 打开walk扫描句柄
-- tx = walk.open(path)
-#### 基础接口
-- [tx.ext()]()
-- [tx.limit()]()
-- [tx.run()]()
+### 内部变量 info
+- info.path
+- info.ok
+- info.name
+- info.ext
+- info.mtime
+- info.ctime
+- info.atime
+- info.dir
+
+### walk
+
 ```lua
-    local wk = file.walk("日志")
-    local tx = wk.open("/var/log")
-    tx.ext(".log") --匹配指定后缀
-    tx.limit(10)   --限速file/s 
-    tx.run()       --启动
-    
+    local wk = file.walk("/var/log" , "/usr/local")
+    wk.deep(10)                  --深度设置
+    wk.dir(true)                 --目录处理
+    wk.filter("*.log" , "*.jar") --匹配字符串
+    wk.ignore("*.zip")           --忽略
+    wk.pipe(function(info)
+        print(info.path)
+    end)
+    wk.run()
+```
+
+## file.glob
+- 文件模糊模式搜索 
+- glob= file.glob(string)
+
+### 基础接口
+- [glob.pipe(object)](glob)
+- [glob.run()](glob)
+- [glob.wrap()](glob)
+- [glob.result](glob)
+
+### glob
+```lua
+    local glob = file.glob("/var/log/*/*.log")
+    glob.pipe(function(info)
+        print(info)
+    end)
+
+    print(glob.result) --slice数据返回
+```
+
+## file.dir
+- 打开文件目录
+- dir = file.dir(string)
+
+### 基础接口
+- [dir.pipe(object)](dir)
+- [dir.filter(string...)](dir)
+- [dir.err](dir)
+- [dir.count](dir)
+- [dir.ok](dir)
+- [dir.result](dir)
+
+### dir
+```lua
+    local dir = file.dir("/var/log")
+    dir.filter("*.log")
+    dir.pipe(function(info)
+        print(info)
+    end)
+
+    print(dir.result) --slice数据返回
+    print(dir.count)  --数量
+    print(dir.ok)     --是否正常
+    print(dir.err)    --错误信息
+```
+
+## file.stat
+- 查看文件状态 
+- info = file.stat(string) [info](内部变量 info)
+- 
+```lua
+    local stat = file.stat("/var/log")
+    print(stat.path)
+    print(stat.name)
+    print(stat.ok)
+    print(stat.err)
 ```

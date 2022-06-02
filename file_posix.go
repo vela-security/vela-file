@@ -9,13 +9,19 @@ import (
 )
 
 func (i info) ctime() int64 {
-	stat := i.fd.Sys().(*syscall.Stat_t)
-	return stat.Ctim.Nsec
+	if i.ok() {
+		stat := i.fd.Sys().(*syscall.Stat_t)
+		return stat.Ctim.Nsec
+	}
+	return 0
 }
 
 func (i info) atime() int64 {
-	stat := i.fd.Sys().(*syscall.Stat_t)
-	return stat.Atim.Nsec
+	if i.ok() {
+		stat := i.fd.Sys().(*syscall.Stat_t)
+		return stat.Atim.Nsec
+	}
+	return 0
 }
 
 func openFile(filename string) (*os.File, error) {

@@ -51,11 +51,33 @@ func newLuaFileStat(L *lua.LState) int {
 	return 1
 }
 
+func newLuaFileWalk(L *lua.LState) int {
+	cfg := newWalkConfig(L)
+	proc := L.NewProc(cfg.name, walkTypeof)
+	if proc.IsNil() {
+		proc.Set(newWalk(cfg))
+	} else {
+		old := proc.Data.(*walk)
+		old.Close()
+		proc.Set(newWalk(cfg))
+	}
+
+	L.Push(proc)
+	return 1
+}
+
+func newLuaFileGlob(L *lua.LState) int {
+	L.Push(newFileGlob(L))
+	return 1
+}
+
 func WithEnv(env assert.Environment) {
 	xEnv = env
 	file := lua.NewUserKV()
 	file.Set("open", lua.NewFunction(newLuaFileOpen))
 	file.Set("dir", lua.NewFunction(newLuaFileDir))
 	file.Set("stat", lua.NewFunction(newLuaFileStat))
+	file.Set("walk", lua.NewFunction(newLuaFileWalk))
+	file.Set("glob", lua.NewFunction(newLuaFileGlob))
 	env.Global("file", file)
 }

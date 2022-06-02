@@ -1,7 +1,8 @@
 package file
 
 import (
-	"fmt"
+	"github.com/vela-security/vela-public/auxlib"
+	"github.com/vela-security/vela-public/kind"
 	"github.com/vela-security/vela-public/lua"
 	"os"
 	"path/filepath"
@@ -14,7 +15,7 @@ type info struct {
 	err  error
 }
 
-func (i info) String() string                         { return fmt.Sprintf("%+v", &i) }
+func (i info) String() string                         { return auxlib.B2S(i.Byte()) }
 func (i info) Type() lua.LValueType                   { return lua.LTObject }
 func (i info) AssertFloat64() (float64, bool)         { return 0, false }
 func (i info) AssertString() (string, bool)           { return "", false }
@@ -30,60 +31,51 @@ func newInfo(path string, fd os.FileInfo, err error) info {
 	}
 }
 
+func (i info) Byte() []byte {
+	enc := kind.NewJsonEncoder()
+	enc.Tab("")
+	enc.KV("path", i.path)
+	enc.KV("ext", i.ext)
+	enc.KV("mtime", i.MTime())
+	enc.KV("size", i.fd.Size())
+	enc.End("}")
+	return enc.Bytes()
+}
+
 func (i info) ok() bool {
-	if i.err == nil {
-		return true
+	return i.err == nil
+
+}
+
+func (i info) MTime() int64 {
+	if i.ok() {
+		return i.fd.ModTime().Unix()
 	}
-	return false
+	return 0
 }
 
 func (i info) Index(L *lua.LState, key string) lua.LValue {
 	switch key {
 
-	case "ok":
-		return lua.LBool(i.ok())
-
 	case "name":
-		if i.ok() {
-			return lua.LNil
-		}
-
 		return lua.S2L(i.fd.Name())
 
 	case "ext":
-		if i.ok() {
-			return lua.LNil
-		}
 		return lua.S2L(i.ext)
 
 	case "mtime":
-		if i.ok() {
-			return lua.LNil
-		}
-		return lua.LNumber(i.fd.ModTime().Unix())
+		return lua.LNumber(i.MTime())
 
 	case "ctime":
-		if i.ok() {
-			return lua.LNil
-		}
 		return lua.LNumber(i.ctime())
 
 	case "atime":
-		if i.ok() {
-			return lua.LNil
-		}
 		return lua.LNumber(i.atime())
 
 	case "path":
-		if i.ok() {
-			return lua.LNil
-		}
 		return lua.S2L(i.path)
 
 	case "dir":
-		if i.ok() {
-			return lua.LNil
-		}
 		return lua.LBool(i.fd.IsDir())
 
 	}

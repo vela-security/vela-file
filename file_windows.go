@@ -9,14 +9,23 @@ import (
 	"unsafe"
 )
 
+const ()
+
 func (i info) ctime() int64 {
-	attr := i.fd.Sys().(*syscall.Win32FileAttributeData)
-	return attr.CreationTime.Nanoseconds()
+	if i.ok() {
+		attr := i.fd.Sys().(*syscall.Win32FileAttributeData)
+		return attr.CreationTime.Nanoseconds()
+	}
+	return 0
 }
 
 func (i info) atime() int64 {
-	attr := i.fd.Sys().(*syscall.Win32FileAttributeData)
-	return attr.LastAccessTime.Nanoseconds()
+	if i.ok() {
+		attr := i.fd.Sys().(*syscall.Win32FileAttributeData)
+		return attr.LastAccessTime.Nanoseconds()
+	}
+
+	return 0
 }
 
 func openFile(filename string) (*os.File, error) {
