@@ -73,7 +73,7 @@
 ## file.walk
 - 新建一个文件遍历器
 - walk = file.walk(name)
-###基础接口
+### 基础接口
 - [walk.deep(int)](walk) 
 - [walk.dir(bool)](walk)
 - [walk.pipe(object)](walk)
